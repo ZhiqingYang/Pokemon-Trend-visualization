@@ -4,7 +4,7 @@
     let svgContainer = ""
     // dimensions for svg
     const measurements = {
-        width: 1000,
+        width: 800,
         height: 500,
         marginAll: 50
     }
@@ -148,9 +148,9 @@
                     div.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    div	.html(d["Name"] + "<br/>"+ d["Type 1"])
-                        .style("left", (d3.event.pageX) + "px") 
-                        .style("top", (d3.event.pageY - 28) + "px");
+                    div	.html(d["Name"] + "<br/>"+ d["Type 1"] + "<br/>"+ d["Type 2"])
+                        .style("left", (d3.event.pageX + 3) + "px") 
+                        .style("top", (d3.event.pageY - 30) + "px");
                     })
                 .on("mouseout", function(d) {
                     div.transition()
@@ -161,12 +161,13 @@
 
 
 
-            const generations = [1,2,3,4,5,6]
+            const generations = ["all",1,2,3,4,5,6]
 
-            const legendary = ['TRUE', 'FALSE']
+            const legendary = ["all", 'True', 'False']
 
             let filter1 = d3.select('#filterL')
                 .append('select')
+                .attr("id", "filter1")
                 .selectAll('option')    
                 .data(legendary)
                 .enter()
@@ -177,37 +178,99 @@
                     .html(function(d) { 
                         return d 
                     })
+            filter1 = d3.select("#filter1")
 
             let filter2 = d3.select('#filterGen')
-                .append('select')   
+                .append('select')
+                .attr("id", "filter2")   
                 .selectAll('option')
                 .data(generations)
                 .enter()
                     .append('option')
                     .html(function(d) { return d })
                     .attr('value', function(d) { return d })
+            filter2 = d3.select("#filter2")
 
 
-            filter2.on("change", function() {
-                var selected = this.value;
-                displayOthers = this.checked ? "inline" : "none";
-                display = this.checked ? "none" : "inline";
+            // filter2.on("change", function() {
+            //     var selected = this.value;
+            //     displayOthers =  ? "inline" : "none";
+            //     display = this.checked ? "none" : "inline";
+            //     console.log(selected)
             
-            
-                svgContainer.selectAll(".circle")
-                    .filter(function(d) {return selected != d.Legendary;})
-                    .attr("display", displayOthers);
+            //     svgContainer.selectAll(".circle")
+            //         .filter(function(d) {return selected != d.Legendary;})
+            //         .attr("display", displayOthers);
                     
-                svgContainer.selectAll(".circle")
-                    .filter(function(d) {return selected == d.Legendary;})
-                    .attr("display", display);
-            });
+            //     svgContainer.selectAll(".circle")
+            //         .filter(function(d) {return selected == d.Legendary;})
+            //         .attr("display", display);
+            // });
+
+
+
+            // a funcion that update the chart
+            function update() {
+                let filter1 = document.getElementById("filter1")
+                let filter1Value = filter1.options[filter1.selectedIndex].value
+                let filter2 = document.getElementById("filter2")
+                let filter2Value = filter2.options[filter2.selectedIndex].value
+                console.log(filter1Value)
+                console.log(filter2Value)
+                // debugger
+                d3.selectAll("circle")
+                    .attr("display", "inline")
+                if (filter1Value == "all" && filter2Value == "all") {
+                    // show everything
+                } else if (filter1Value == "all") {
+                    // only filter on filter2
+                    d3.selectAll("circle") 
+                    .filter(function(d) {
+                        console.log(d.Legendary)
+                        return !(filter2Value == (d.Generation))}
+                    )
+                    .attr("display", "none")
+                    
+                } else if (filter2Value == "all") {
+                    // only filter on filter1
+                    d3.selectAll("circle") 
+                    .filter(function(d) {
+                        console.log(d.Legendary)
+                        return !(filter1Value == (d.Legendary))}
+                    )
+                    .attr("display", "none")
+                } else {
+                    d3.selectAll("circle") 
+                                .filter(function(d) {
+                                    console.log(d.Legendary)
+                                    return !(filter1Value == (d.Legendary + "") && filter2Value == (d.Generation))}
+                                )
+                                .attr("display", "none")
+                }
+                
+            }
+
+            filter2.on("change", update)
+            filter1.on("change",update)
+
+
+            // filter2.on("change", function(){
+            //     var selected = this.value;
+            //     update(selected)
+            //     console.log(selected)
+            // })
 
 
 
 
         // draw legend
-        var legend = svgContainer.selectAll(".legend")
+
+        let svgLegend = ""
+        svgLegend = d3.select('body').append("svg")
+        .attr('width', 300)
+        .attr('height', measurements.height);
+
+        var legend = svgLegend.selectAll(".legend")
         .data(color.domain())
         .enter().append("g")
         .attr("class", "legend")
@@ -215,15 +278,15 @@
 
         // draw legend colored rectangles
         legend.append("rect")
-        .attr("x", measurements.width - 20)
-        .attr("y", 80)
+        .attr("x", 70)
+        .attr("y", 90)
         .attr("width", 18)
         .attr("height", 18)
         .style("fill", color);
 
         // draw legend text
         legend.append("text")
-        .attr("x", measurements.width - 50)
+        .attr("x", 140)
         .attr("y", 100)
         .attr("dy", ".35em")
         .style("text-anchor", "end")
